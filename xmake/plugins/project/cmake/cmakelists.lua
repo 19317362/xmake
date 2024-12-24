@@ -533,7 +533,8 @@ end
 function _add_target_precompiled_header(cmakelists, target, outputdir)
     local precompiled_header = target:get("pcheader") or target:get("pcxxheader")
     if precompiled_header then
-        cmakelists:print("target_precompile_headers(%s PRIVATE", target:name())
+        cmakelists:print("target_precompile_headers(%s PRIVATE",
+            target:name())
         cmakelists:print("    $<$<COMPILE_LANGUAGE:%s>:${CMAKE_CURRENT_SOURCE_DIR}/%s>",
             target:get("pcxxheader") and "CXX" or "C",
             _get_relative_unix_path(precompiled_header, outputdir))
@@ -950,7 +951,8 @@ function _add_target_runtimes(cmakelists, target)
         else
             runtimes = "MultiThreaded$<$<CONFIG:Debug>:Debug>"
         end
-        cmakelists:print('    set_property(TARGET %s PROPERTY', target:name())
+        cmakelists:print('    set_property(TARGET %s PROPERTY',
+            target:name())
         cmakelists:print('        MSVC_RUNTIME_LIBRARY "%s")', runtimes)
         cmakelists:print("endif()")
     end
@@ -1337,8 +1339,17 @@ function make(outputdir)
     -- enter project directory
     local oldir = os.cd(os.projectdir())
 
+    -- get architecture ABI
+    local arch_abi = config.get("arch") or "unknown-abi"
+
+    -- determine the filename
+    local filename = "CMakeLists.txt"
+    if config.get("plat") == "android" then
+        filename = "CMakeLists_" .. arch_abi .. ".txt"
+    end
+
     -- open the cmakelists
-    local cmakelists = io.open(path.join(outputdir, "CMakeLists.txt"), "w")
+    local cmakelists = io.open(path.join(outputdir, filename), "w")
 
     -- generate cmakelists
     _generate_cmakelists(cmakelists, outputdir)
