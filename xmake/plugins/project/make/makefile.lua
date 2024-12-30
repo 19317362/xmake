@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.base.colors")
 import("core.tool.compiler")
 import("core.project.config")
@@ -691,8 +692,10 @@ function make(outputdir)
     -- enter project directory
     local oldir = os.cd(os.projectdir())
 
+        -- determine the filename
+    local filename = option.get("outputfile") or "makefile"
     -- open the makefile
-    local makefile = io.open(path.join(outputdir, "makefile"), "w")
+    local makefile = io.open(path.join(outputdir, filename), "w")
 
     -- add header
     _add_header(makefile)

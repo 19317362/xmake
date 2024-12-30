@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import(".cmake.cmakelists")
 import("lib.detect.find_tool")
 
@@ -31,8 +32,11 @@ function make(outputdir)
     -- find cmake
     local cmake = assert(find_tool("cmake"), "we need cmake to generate xcode project!")
 
+    -- determine the filename
+    local filename = option.get("outputfile") or "CMakeLists.txt"
+
     -- get the cmakelists file
-    local cmakefile = path.join(outputdir, "CMakeLists.txt")
+    local cmakefile = path.join(outputdir, filename)
     if not os.isfile(cmakefile) then
         cmakelists.make(outputdir)
     end

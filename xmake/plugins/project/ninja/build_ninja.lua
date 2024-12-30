@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
@@ -443,6 +444,9 @@ function make(outputdir)
     -- enter project directory
     local oldir = os.cd(os.projectdir())
 
+    -- determine the filename
+    local filename = option.get("outputfile") or "build.ninja"
+
     -- open the build.ninja file
     --
     -- we need to change encoding to support msvc_deps_prefix
@@ -451,7 +455,7 @@ function make(outputdir)
     -- TODO maybe we need support more encoding for other languages
     --
     local encoding = is_subhost("windows") and "gbk"
-    local ninjafile = io.open(path.join(outputdir, "build.ninja"), "w", {encoding = encoding})
+    local ninjafile = io.open(path.join(outputdir, filename), "w", {encoding = encoding})
 
     -- add header
     _add_header(ninjafile)

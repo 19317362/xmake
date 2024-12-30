@@ -315,7 +315,10 @@ end
 --
 function make(outputdir)
     local oldir = os.cd(os.projectdir())
-    local jsonfile = io.open(path.join(outputdir, "compile_commands.json"), "w")
+
+    -- determine the filename
+    local filename = option.get("outputfile") or "compile_commands.json"    
+    local jsonfile = io.open(path.join(outputdir, filename), "w")
     _add_targets(jsonfile)
     jsonfile:close()
     os.cd(oldir)
