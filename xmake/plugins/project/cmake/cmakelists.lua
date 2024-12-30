@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.base.colors")
 import("core.project.project")
 import("core.project.config")
@@ -1339,15 +1340,9 @@ function make(outputdir)
     -- enter project directory
     local oldir = os.cd(os.projectdir())
 
-    -- get architecture ABI
-    local arch_abi = config.get("arch") or "unknown-abi"
-
     -- determine the filename
-    local filename = "CMakeLists.txt"
-    if config.get("plat") == "android" then
-        filename = "CMakeLists_" .. arch_abi .. ".txt"
-    end
-
+    local filename = option.get("outputfile") or "CMakeLists.txt"
+    print("generating %s ...", filename)
     -- open the cmakelists
     local cmakelists = io.open(path.join(outputdir, filename), "w")
 
