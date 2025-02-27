@@ -28,7 +28,7 @@ jobs:
         with:
           # this is not supported, use dev branch instead
           # xmake-version: local#
-          xmake-version: branch@dev
+          xmake-version: branch@test
       - uses: dlang-community/setup-dlang@v1
         with:
           compiler: dmd-latest
