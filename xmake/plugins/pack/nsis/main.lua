@@ -64,9 +64,13 @@ function _get_makensis()
     -- find makensis
     local packages = {}
     local makensis = find_tool("makensis", {check = _check_makensis})
+    print("---------------- find_tool", makensis)
     if not makensis then
+    print("---------------- install makensis ------------------")
         table.join2(packages, install_packages("nsis"))
+    print("---------------- install makensis ------------------")
     end
+    print("---------------- find_tool end", makensis)
 
     -- enter the environments of installed packages
     for _, instance in ipairs(packages) do
