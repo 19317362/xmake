@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        policy.lua
@@ -72,6 +72,8 @@ function policy.policies()
             ["build.rpath"]                       = {description = "Enable build rpath.", default = true, type = "boolean"},
             -- Enable C++ modules for C++ building, even if no .mpp is involved in the compilation
             ["build.c++.modules"]                 = {description = "Enable C++ modules for C++ building.", type = "boolean"},
+            -- Enable two phase compilation for C++ modules if supported by the compiler
+            ["build.c++.modules.two_phases"]      = {description = "Enable two phase compilation if supported.", default = true, type = "boolean"},
             -- Enable std module
             ["build.c++.modules.std"]             = {description = "Enable std modules.", default = true, type = "boolean"},
             -- Enable unreferenced and non-public named module culling
@@ -79,6 +81,8 @@ function policy.policies()
             -- Always reuse compiled module bmi file
             ["build.c++.modules.reuse"]           = {description = "Reuse compiled module artifacts if possible.", default = true, type = "boolean"},
             ["build.c++.modules.tryreuse"]        = {description = "Try to reuse compiled module if possible. (deprecated)", default = false, type = "boolean"},
+            -- Disabled flag check when reusing modules
+            ["build.c++.modules.reuse.nocheck"]   = {description = "Disable flag compatibility check when reusing modules.", default = false, type = "boolean"},
             -- If target will not reuse modules from target deps if defines are different
             ["build.c++.modules.reuse.strict"]          = {description = "Enable strict defines comparison when trying to reuse module.", default = false, type = "boolean"},
             ["build.c++.modules.tryreuse.discriminate_on_defines"] = {description = "Enable defines module reuse discrimination.", default = false, type = "boolean"},
@@ -97,7 +101,7 @@ function policy.policies()
             -- If in the future, gcc can support it well, we'll turn it on by default
             -- https://github.com/xmake-io/xmake/issues/3855
             ["build.c++.modules.gcc.cxx11abi"]    = {description = "Force to enable new cxx11 abi in C++ modules for gcc.", type = "boolean"},
-            ["build.c++.gcc.modules.cxx11abi"]    = {description = "Force to enable new cxx11 abi in C++ modules for gcc. (deprecated)", type = "boolean", default = false},
+            ["build.c++.gcc.modules.cxx11abi"]    = {description = "Force to enable new cxx11 abi in C++ modules for gcc. (deprecated)", type = "boolean"},
             -- Set the default vs runtime, e.g. MT, MD
             ["build.c++.msvc.runtime"]            = {description = "Set the default vs runtime.", type = "string", values = {"MT", "MD"}},
             -- Enable cuda device link
@@ -174,7 +178,10 @@ function policy.policies()
             --   private: it will disable fetch remote package repositories
             ["network.mode"]                      = {description = "Set the network mode", type = "string"},
             -- Set the compatibility version, e.g. 2.0, 3.0
-            ["compatibility.version"]             = {description = "Set the compatibility version", type = "string", default = "3.0", values = {"2.0", "3.0"}}
+            ["compatibility.version"]             = {description = "Set the compatibility version", type = "string", default = "3.0", values = {"2.0", "3.0"}},
+            -- Generate the solution file in root output directory
+            -- @see https://github.com/xmake-io/xmake/issues/6519
+            ["generator.vsxmake.root_sln"]        = {description = "Generate the solution file in root output directory", default = false, type = "boolean"}
         }
         policy._POLICIES = policies
     end

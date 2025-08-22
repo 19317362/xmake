@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        build_ninja.lua
@@ -29,6 +29,7 @@ import("lib.detect.find_tool")
 import("lib.detect.find_toolname")
 import("core.tools.cl.parse_include")
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
+import("private.utils.target", {alias = "target_utils"})
 
 -- this sourcebatch is built?
 function _sourcebatch_is_built(sourcebatch)
@@ -352,7 +353,7 @@ function _add_build_for_target(ninjafile, target, outputdir)
     target:data_set("plugin.project.kind", "ninja")
 
     -- is phony target?
-    if target:is_phony() then
+    if target:is_phony() or target:is_headeronly() then
         return _add_build_for_phony(ninjafile, target)
     end
 
@@ -378,7 +379,10 @@ function _add_build_for_target(ninjafile, target, outputdir)
         ninjafile:print(" || $")
         ninjafile:write("  ")
         for _, dep in ipairs(deps) do
-            ninjafile:write(" " .. _get_relative_unix_path(project.target(dep, {namespace = target:namespace()}):targetfile(), outputdir))
+            local dep_target = project.target(dep, {namespace = target:namespace()});
+            if not dep_target:is_headeronly() then
+                ninjafile:write(" " .. _get_relative_unix_path(dep_target:targetfile(), outputdir))
+            end
         end
     end
     ninjafile:print("")
@@ -417,21 +421,22 @@ function _add_build_for_targets(ninjafile, outputdir)
     -- add build rule for generator
     _add_build_for_generator(ninjafile, outputdir)
 
+    local project_targets = target_utils.get_project_targets()
     -- TODO
     -- disable precompiled header first
-    for _, target in pairs(project.targets()) do
+    for _, target in pairs(project_targets) do
         target:set("pcheader", nil)
         target:set("pcxxheader", nil)
     end
 
     -- build targets
-    for _, target in pairs(project.targets()) do
+    for _, target in pairs(project_targets) do
         _add_build_for_target(ninjafile, target, outputdir)
     end
 
     -- build default
     local default = ""
-    for targetname, target in pairs(project.targets()) do
+    for targetname, target in pairs(project_targets) do
         if target:is_default() then
             default = default .. " " .. targetname
         end
@@ -440,7 +445,7 @@ function _add_build_for_targets(ninjafile, outputdir)
 
     -- build all
     local all = ""
-    for targetname, _ in pairs(project.targets()) do
+    for targetname, _ in pairs(project_targets) do
         all = all .. " " .. targetname
     end
     ninjafile:print("build all: phony%s\n", all)

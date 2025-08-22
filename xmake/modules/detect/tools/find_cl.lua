@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        find_cl.lua
@@ -62,7 +62,9 @@ function main(opt)
             return info
         end
         opt.parse = opt.parse or function (output)
-            return output:match("(%d+%.%d+%.%d*.-)%s")
+            -- we only keep the first three digits of the version number, making sure to provide a valid semver string.
+            -- @see https://github.com/xmake-io/xmake/issues/6474
+            return output:match("%s(%d+%.%d+%.%d+)")
         end
         version = find_programver(program, opt)
     end

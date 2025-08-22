@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        makefile.lua
@@ -28,6 +28,7 @@ import("core.platform.platform")
 import("lib.detect.find_tool")
 import("private.utils.batchcmds")
 import("plugins.project.utils.target_cmds", {rootdir = os.programdir()})
+import("private.utils.target", {alias = "target_utils"})
 
 -- tranlate path
 function _translate_path(filepath, outputdir)
@@ -333,8 +334,9 @@ function _add_toolchains(makefile, outputdir)
     makefile:print("")
 
     -- add toolchains from targets
-    for targetname, target in pairs(project.targets()) do
-        if not target:is_phony() then
+    local project_targets = target_utils.get_project_targets()
+    for targetname, target in pairs(project_targets) do
+        if not _phony_or_headeronly(target) then
             local program = _get_program_from_target(target, target:linker():kind())
             if program then
                 makefile:print("%s_%s=%s", targetname, target:linker():kind():upper(), program)
@@ -353,10 +355,15 @@ function _add_toolchains(makefile, outputdir)
     makefile:print("")
 end
 
+function _phony_or_headeronly(target) 
+    return target:is_phony() or target:is_headeronly()
+end
+
 -- add flags
 function _add_flags(makefile, targetflags, outputdir)
-    for targetname, target in pairs(project.targets()) do
-        if not target:is_phony() then
+    local project_targets = target_utils.get_project_targets()
+    for targetname, target in pairs(project_targets) do
+        if not _phony_or_headeronly(target) then
             for _, sourcebatch in pairs(target:sourcebatches()) do
                 local sourcekind = sourcebatch.sourcekind
                 if sourcekind then
@@ -512,7 +519,7 @@ function _add_build_target(makefile, target, targetflags, outputdir)
     local precmds_label = _add_build_custom_commands_before(makefile, target, outputdir)
 
     -- is phony target?
-    if target:is_phony() then
+    if _phony_or_headeronly(target) then
         return _add_build_phony(makefile, target)
     end
 
@@ -539,7 +546,7 @@ function _add_build_target(makefile, target, targetflags, outputdir)
     -- make dependence for the dependent targets
     for _, depname in ipairs(target:get("deps")) do
         local dep = project.target(depname, {namespace = target:namespace()})
-        makefile:write(" " .. (dep:is_phony() and depname or _get_relative_unix_path(dep:targetfile(), outputdir)))
+        makefile:write(" " .. (_phony_or_headeronly(dep) and depname or _get_relative_unix_path(dep:targetfile(), outputdir)))
     end
 
     -- make dependence for objects
@@ -612,19 +619,20 @@ end
 -- add build targets
 function _add_build_targets(makefile, targetflags, outputdir)
     local default = ""
-    for targetname, target in pairs(project.targets()) do
+    local project_targets = target_utils.get_project_targets()
+    for targetname, target in pairs(project_targets) do
         if target:is_default() then
             default = default .. " " .. targetname
         end
     end
     makefile:print("default: %s\n", default)
     local all = ""
-    for targetname, _ in pairs(project.targets()) do
+    for targetname, _ in pairs(project_targets) do
         all = all .. " " .. targetname
     end
     makefile:print("all: %s\n", all)
     makefile:print(".PHONY: default all %s\n", all)
-    for _, target in pairs(project.targets()) do
+    for _, target in pairs(project_targets) do
         _add_build_target(makefile, target, targetflags, outputdir)
     end
 end
@@ -634,7 +642,8 @@ function _add_build(makefile, targetflags, outputdir)
 
     -- TODO
     -- disable precompiled header first
-    for _, target in pairs(project.targets()) do
+    local project_targets = target_utils.get_project_targets()
+    for _, target in pairs(project_targets) do
         target:set("pcheader", nil)
         target:set("pcxxheader", nil)
     end
@@ -650,7 +659,7 @@ function _add_clean_target(makefile, target, outputdir)
         makefile:write(" clean_" .. dep)
     end
     makefile:print("")
-    if not target:is_phony() then
+    if not _phony_or_headeronly(target) then
         _add_remove_files(makefile, target:targetfile(), outputdir)
         _add_remove_files(makefile, target:symbolfile(), outputdir)
         _add_remove_files(makefile, target:objectfiles(), outputdir)
@@ -661,13 +670,14 @@ end
 -- add clean targets
 function _add_clean_targets(makefile, outputdir)
     local all = ""
-    for targetname, _ in pairs(project.targets()) do
+    local project_targets = target_utils.get_project_targets()
+    for targetname, _ in pairs(project_targets) do
         all = all .. " clean_" .. targetname
     end
     makefile:print("clean: %s\n", all)
 
     -- add clean targets
-    for _, target in pairs(project.targets()) do
+    for _, target in pairs(project_targets) do
         _add_clean_target(makefile, target, outputdir)
     end
 end

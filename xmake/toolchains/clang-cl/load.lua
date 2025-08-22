@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        load.lua
@@ -52,9 +52,10 @@ end
 function main(toolchain)
 
     -- set toolset
-    toolchain:set("toolset", "cc",  "clang-cl")
-    toolchain:set("toolset", "cxx", "clang-cl")
-    toolchain:set("toolset", "mrc", "rc.exe")
+    toolchain:set("toolset", "cc",      "clang-cl")
+    toolchain:set("toolset", "cxx",     "clang-cl")
+    toolchain:set("toolset", "mrc",     "rc.exe")
+    toolchain:set("toolset", "dlltool", "llvm-dlltool")
     if toolchain:is_arch("x64") then
         toolchain:set("toolset", "as",  "ml64.exe")
     else

@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        find_qt.lua
@@ -141,7 +141,13 @@ function _find_sdkdir(sdkdir, sdkver)
         -- @see https://github.com/xmake-io/xmake/issues/4881
         if sdkver then
             local major = sdkver:sub(1, 1)
-            qmake = find_file("qmake" .. major, paths, {suffixes = subdirs})
+            local suffixes = {major, "-" .. major, "-qt" .. major, ""}
+            for _, suffix in ipairs(suffixes) do
+                qmake = find_file("qmake" .. suffix, paths, {suffixes = subdirs})
+                if qmake then
+                    break
+                end
+            end
         end
         if not qmake then
             qmake = find_file("qmake", paths, {suffixes = subdirs})
@@ -167,18 +173,25 @@ function _find_qmake(sdkdir, sdkver)
     if sdkver then
         sdkver = semver.try_parse(sdkver)
         if sdkver then
-            local cachekey = "qmake-" .. sdkver:major()
-            qmake = find_tool("qmake", {program = "qmake" .. sdkver:major(), cachekey = cachekey, paths = sdkdir and path.join(sdkdir, "bin")})
+            local major = sdkver:major()
+            local suffixes = {major, "-" .. major, "-qt" .. major}
+            for _, suffix in ipairs(suffixes) do
+                local cachekey = "qmake" .. suffix
+                qmake = find_tool("qmake", {program = cachekey, cachekey = cachekey, paths = sdkdir and path.join(sdkdir, "bin")})
+                if qmake then
+                    break
+                end
+            end
         end
     end
 
     -- we need to find the default qmake in current system
     -- maybe we only installed qmake6
     if not qmake then
-        local suffixes = {"", "6", "-qt5"}
+        local suffixes = {"", "6", "-6", "-qt6", "5", "-5", "-qt5"}
         for _, suffix in ipairs(suffixes) do
-            local cachekey = "qmake-" .. suffix
-            qmake = find_tool("qmake", {program = "qmake" .. suffix, cachekey = cachekey, paths = sdkdir and path.join(sdkdir, "bin")})
+            local cachekey = "qmake" .. suffix
+            qmake = find_tool("qmake", {program = cachekey, cachekey = cachekey, paths = sdkdir and path.join(sdkdir, "bin")})
             if qmake then
                 break
             end
@@ -192,19 +205,23 @@ end
 -- get qt environment
 function _get_qtenvs(qmake, sdkdir)
     local envs = {}
-    local run_args = {"-query"}
+    local results
+
+    -- Try with -qtconf first if sdkdir is provided
     if sdkdir then
         local conf_paths = {path.join(sdkdir, "bin", "target_qt.conf"), path.join(sdkdir, "bin", "qt.conf")}
         for _, conf_path in ipairs(conf_paths) do
             if os.isfile(conf_path) then
-                table.join2(run_args, {"-qtconf", conf_path})
+                results = try {function () return os.iorunv(qmake, {"-query", "-qtconf", conf_path}) end}
                 break
             end
         end
     end
-    local results = try {
+
+    -- Fallback to normal query if sdkdir is not specified or -qtconf not applicable
+    results = results or try {
         function ()
-            return os.iorunv(qmake, run_args)
+            return os.iorunv(qmake, {"-query"})
         end,
         catch {
             function (errors)

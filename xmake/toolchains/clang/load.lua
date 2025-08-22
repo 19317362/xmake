@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        xmake.lua
@@ -85,6 +85,8 @@ function main(toolchain, suffix)
         end
     elseif toolchain:is_plat("mingw") then
         target = target .. "-w64-windows-gnu"
+    elseif toolchain:is_plat("linux") then
+        target = target .. "-linux-gnu"
     end
 
     if target then

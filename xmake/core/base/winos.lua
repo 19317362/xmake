@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        winos.lua
@@ -48,10 +48,7 @@ end
 
 -- get windows version from name
 function winos._version_from_name(name)
-
-    -- make defined values
-    winos._VERSIONS = winos._VERSIONS or
-    {
+    winos._VERSIONS = winos._VERSIONS or {
         nt4      = "4.0"
     ,   win2k    = "5.0"
     ,   winxp    = "5.1"
@@ -65,6 +62,7 @@ function winos._version_from_name(name)
     ,   winblue  = "6.3"
     ,   win81    = "6.3"
     ,   win10    = "10.0"
+    ,   win11    = "10.0.22000"
     }
     return winos._VERSIONS[name]
 end

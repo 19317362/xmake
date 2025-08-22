@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        check.lua
@@ -142,8 +142,9 @@ function main(toolchain)
     if cc == "cl" or cxx == "cl" or mrc == "rc" then
         local sdkdir = toolchain:sdkdir()
         if sdkdir then
-            return _check_vc_build_tools(toolchain, sdkdir)
-        else
+            sdkdir = _check_vc_build_tools(toolchain, sdkdir)
+        end
+        if not sdkdir then
             -- find it from packages
             for _, package in ipairs(toolchain:packages()) do
                 local installdir = package:installdir()
@@ -156,8 +157,9 @@ function main(toolchain)
             end
 
             -- find it from system
-            return _check_vstudio(toolchain)
+            sdkdir = _check_vstudio(toolchain)
         end
+        return sdkdir
     end
 end
 

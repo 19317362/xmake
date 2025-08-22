@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        load.lua
@@ -174,6 +174,7 @@ function main(toolchain)
         local sysroot_arch = sysroot_archs[arch]
 
         -- add sysroot flags
+        local sysroot_cflags_added = false
         local ndk_sysroot = toolchain:config("ndk_sysroot")
         if ndk_sysroot and os.isdir(ndk_sysroot) then
             local triple = _get_triple(arch)
@@ -189,17 +190,21 @@ function main(toolchain)
             toolchain:add("cflags",   flag_isystem)
             toolchain:add("cxxflags", flag_isystem)
             toolchain:add("asflags",  flag_isystem)
-        else
-            local ndk_sdkdir = path.translate(format("%s/platforms/android-%d", ndk, ndk_sdkver))
-            if os.isdir(ndk_sdkdir) then
-                if sysroot_arch then
-                    local flag_sysroot = "--sysroot=" .. os.args(path.join(ndk_sdkdir, sysroot_arch))
+            sysroot_cflags_added = true
+        end
+        local ndk_sdkdir = path.translate(format("%s/platforms/android-%d", ndk, ndk_sdkver))
+        if os.isdir(ndk_sdkdir) then
+            if sysroot_arch then
+                local flag_sysroot = "--sysroot=" .. os.args(path.join(ndk_sdkdir, sysroot_arch))
+                if not sysroot_cflags_added then
                     toolchain:add("cflags",   flag_sysroot)
                     toolchain:add("cxxflags", flag_sysroot)
                     toolchain:add("asflags",  flag_sysroot)
-                    toolchain:add("ldflags",  flag_sysroot)
-                    toolchain:add("shflags",  flag_sysroot)
                 end
+                -- we need to add sysroot flags for low-version ndk
+                -- @see https://github.com/xmake-io/xmake/issues/6621
+                toolchain:add("ldflags",  flag_sysroot)
+                toolchain:add("shflags",  flag_sysroot)
             end
         end
 
@@ -372,8 +377,10 @@ function main(toolchain)
         table.insert(rcshflags, "-l" .. link)
         table.insert(rcldflags, "-l" .. link)
     end
-    toolchain:add("rcshflags", "-C link-args=\"" .. (table.concat(rcshflags, " "):gsub("%-march=.-%s", "") .. "\""))
-    toolchain:add("rcldflags", "-C link-args=\"" .. (table.concat(rcldflags, " "):gsub("%-march=.-%s", "") .. "\""))
+    -- fix [[note: clang++: error: no such file or directory: '"-llog']] on windows
+    -- @note 'link-args=...' should not be 'link-args="..."'
+    toolchain:set("rcshflags", {"-C", "link-args=" .. (table.concat(rcshflags, " "):gsub("%-march=.-%s", ""))}, {expand = false})
+    toolchain:set("rcldflags", {"-C", "link-args=" .. (table.concat(rcldflags, " "):gsub("%-march=.-%s", ""))}, {expand = false})
     local sh = toolchain:tool("sh") -- @note we cannot use `config.get("sh")`, because we need to check sh first
     if sh then
         toolchain:add("rcshflags", "-C linker=" .. sh)

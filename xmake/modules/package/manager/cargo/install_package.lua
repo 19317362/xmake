@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        install_package.lua
@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("core.tools.rustc.target_triple")
 import("lib.detect.find_tool")
 import("private.tools.rust.check_target")
 
@@ -78,7 +79,10 @@ function main(name, opt)
     -- get target
     -- e.g. x86_64-pc-windows-msvc, aarch64-unknown-none
     -- @see https://github.com/xmake-io/xmake/issues/4049
-    local target = check_target(opt.arch, true) and opt.arch or nil
+    local target = #opt.arch:split("%-") >= 2 and check_target(opt.arch, true) and opt.arch
+    if not target then
+        target = target_triple(opt.plat, opt.arch)
+    end
 
     -- generate Cargo.toml
     local sourcedir = path.join(opt.cachedir, "source")

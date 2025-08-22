@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        xmake.lua
@@ -30,24 +30,9 @@ rule("win.sdk.application")
     end)
 
     after_load(function (target)
-
-        -- set subsystem: windows
-        if target:is_plat("mingw") then
-            target:add("ldflags", "-mwindows", {force = true})
-        else
-            local subsystem = false
-            for _, ldflag in ipairs(target:get("ldflags")) do
-                if type(ldflag) == "string" then
-                    ldflag = ldflag:lower()
-                    if ldflag:find("[/%-]subsystem:") then
-                        subsystem = true
-                        break
-                    end
-                end
-            end
-            if not subsystem then
-                target:add("ldflags", "-subsystem:windows", {force = true, tools = {"link"}})
-            end
+        -- set windows subsystem
+        if not target:values("windows.subsystem") then
+            target:values_set("windows.subsystem", "windows")
         end
 
         -- add links

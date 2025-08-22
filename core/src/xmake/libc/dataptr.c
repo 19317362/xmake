@@ -12,7 +12,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Copyright (C) 2015-present, TBOOX Open Source Group.
+ * Copyright (C) 2015-present, Xmake Open Source Community.
  *
  * @author      ruki
  * @file        dataptr.c
@@ -46,7 +46,7 @@ tb_int_t xm_libc_dataptr(lua_State* lua)
     else if (xm_lua_ispointer(lua, 1))
         data = (tb_pointer_t)xm_lua_topointer(lua, 1);
     else xm_libc_return_error(lua, "libc.dataptr(invalid data)!");
-    lua_pushinteger(lua, (lua_Integer)data);
+    lua_pushinteger(lua, (lua_Integer)(tb_long_t)data);
     return 1;
 }
 

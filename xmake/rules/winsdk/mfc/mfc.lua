@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      xigal, ruki
 -- @file        xmake.lua
@@ -87,7 +87,9 @@ function application(target, mfc_kind)
     _remove_flags(target)
 
     -- set windows subsystem
-    target:add("ldflags", "-subsystem:windows", {force = true})
+    if not target:values("windows.subsystem") then
+        target:values_set("windows.subsystem", "windows")
+    end
 
     -- forces a link to complete even with unresolved symbols
     if mfc_kind == "static" then

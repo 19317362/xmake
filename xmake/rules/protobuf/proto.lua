@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        proto.lua
@@ -108,6 +108,7 @@ function buildcmd_pfile(target, batchcmds, sourcefile_proto, sourcekind, opt)
     local autogendir
     local public
     local grpc_cpp_plugin
+    local proto_flags
     local fileconfig = target:fileconfig(sourcefile_proto)
     if fileconfig then
         public = fileconfig.proto_public
@@ -116,6 +117,8 @@ function buildcmd_pfile(target, batchcmds, sourcefile_proto, sourcekind, opt)
         -- @see https://github.com/xmake-io/xmake/issues/3678
         autogendir = fileconfig.proto_autogendir
         grpc_cpp_plugin = fileconfig.proto_grpc_cpp_plugin
+        -- custom flags, pass through to protoc
+        proto_flags = fileconfig.proto_flags
     end
     local rootdir = autogendir and autogendir or path.join(target:autogendir(), "rules", "protobuf")
     local filename = path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c")
@@ -141,6 +144,10 @@ function buildcmd_pfile(target, batchcmds, sourcefile_proto, sourcekind, opt)
         local extension = target:is_plat("windows") and ".exe" or ""
         table.insert(protoc_args, "--plugin=protoc-gen-grpc=" .. grpc_cpp_plugin_bin .. extension)
         table.insert(protoc_args, path(sourcefile_dir, function (p) return ("--grpc_out=") .. p end))
+    end
+
+    if proto_flags then
+        table.join2(protoc_args, proto_flags)
     end
 
     -- add commands

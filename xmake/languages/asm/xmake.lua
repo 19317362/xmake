@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        xmake.lua
@@ -20,7 +20,7 @@
 
 language("asm")
     add_rules("asm")
-    set_sourcekinds {as = {".s", ".asm"}}
+    set_sourcekinds {as = {".s", ".S", ".asm"}}
     set_sourceflags {as = "asflags"}
     set_targetkinds {binary = "ld", static = "ar", shared = "sh"}
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}

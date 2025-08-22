@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        verilator.lua
@@ -256,7 +256,7 @@ function build_cppfiles(target, jobgraph, sourcebatch, opt)
         dependfiles = {}}
     for _, sourcefile in ipairs(sourcefiles) do
         local objectfile = target:objectfile(sourcefile)
-        local dependfile = target:objectfile(objectfile)
+        local dependfile = target:dependfile(objectfile)
         table.insert(target:objectfiles(), objectfile)
         table.insert(sourcebatch_cpp.objectfiles, objectfile)
         table.insert(sourcebatch_cpp.dependfiles, dependfile)

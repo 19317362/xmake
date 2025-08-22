@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        xmake.lua
@@ -32,7 +32,7 @@
 -- @endcode
 --
 function xrepo_addenvs(envs)
-    local packagename = "__xrepo_addenvs_" .. hash.strhash32(tostring(envs))
+    local packagename = "__xrepo_addenvs_" .. hash.strhash32(string.serialize(envs))
     package(packagename)
         on_load(function (package)
             if type(envs) == "function" then

@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki, Arthapz
 -- @file        stlheaders.lua
@@ -23,6 +23,7 @@ import("core.base.hashset")
 
 -- the stl headers list
 function _stlheaders()
+
     return {
     "algorithm",
     "forward_list",

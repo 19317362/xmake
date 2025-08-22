@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 --
--- Copyright (C) 2015-present, TBOOX Open Source Group.
+-- Copyright (C) 2015-present, Xmake Open Source Community.
 --
 -- @author      ruki
 -- @file        xmake.lua
@@ -27,7 +27,7 @@ rule("c.build.pcheader")
     end, {jobgraph = true})
 
 rule("c++.build.pcheader")
-    add_orders("c++.build.pcheader", "c++.build.modules.builder")
+    add_orders("c++.build.modules.scanner", "c++.build.pcheader", "c++.build.modules.builder")
     on_config(function (target, opt)
         import("private.action.build.pcheader").config(target, "cxx", opt)
     end)
