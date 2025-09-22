@@ -661,6 +661,11 @@ function nf_includedir(self, dir)
     return {"-I" .. path.translate(dir)}
 end
 
+-- make the embeddir flag
+function nf_embeddir(self, dir)
+    return {"--embed-dir=" .. path.translate(dir)}
+end
+
 -- make the sysincludedir flag
 function nf_sysincludedir(self, dir)
     return {"-isystem", path.translate(dir)}
@@ -836,7 +841,7 @@ function nf_pcheader(self, pcheaderfile, opt)
     if self:kind() == "cc" then
         local target = opt.target
         local pcoutputfile = target:pcoutputfile("c")
-        if self:name() == "clang" then
+        if self:name():startswith("clang") then
             return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
         else
             return {"-I", path.directory(pcoutputfile), "-include", path.filename(pcheaderfile)}
@@ -849,7 +854,7 @@ function nf_pcxxheader(self, pcheaderfile, opt)
     if self:kind() == "cxx" then
         local target = opt.target
         local pcoutputfile = target:pcoutputfile("cxx")
-        if self:name() == "clang" then
+        if self:name():startswith("clang") then
             return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
         else
             return {"-I", path.directory(pcoutputfile), "-include", path.filename(pcheaderfile)}
@@ -862,7 +867,7 @@ function nf_pmheader(self, pcheaderfile, opt)
     if self:kind() == "mm" then
         local target = opt.target
         local pcoutputfile = target:pcoutputfile("m")
-        if self:name() == "clang" then
+        if self:name():startswith("clang") then
             return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
         else
             return {"-I", path.directory(pcoutputfile), "-include", path.filename(pcheaderfile)}
@@ -875,7 +880,7 @@ function nf_pmxxheader(self, pcheaderfile, opt)
     if self:kind() == "mxx" then
         local target = opt.target
         local pcoutputfile = target:pcoutputfile("mxx")
-        if self:name() == "clang" then
+        if self:name():startswith("clang") then
             return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
         else
             return {"-I", path.directory(pcoutputfile), "-include", path.filename(pcheaderfile)}
@@ -937,6 +942,13 @@ end
 function link(self, objectfiles, targetkind, targetfile, flags, opt)
     opt = opt or {}
 
+    -- enable linker output?
+    local target = opt.target
+    local linker_output = option.get("verbose")
+    if linker_output == nil and target and target.policy and target:policy("build.linker.output") then
+        linker_output = true
+    end
+
     os.mkdir(path.directory(targetfile))
     local implibfile = _get_implibfile(self, targetkind, targetfile, opt)
     if implibfile then
@@ -944,7 +956,7 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
     end
 
     local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
-    if option.get("verbose") then
+    if linker_output then
         os.execv(program, argv, {envs = self:runenvs(), shell = opt.shell})
     else
         os.vrunv(program, argv, {envs = self:runenvs(), shell = opt.shell})

@@ -72,6 +72,10 @@ function policy.policies()
             ["build.rpath"]                       = {description = "Enable build rpath.", default = true, type = "boolean"},
             -- Enable C++ modules for C++ building, even if no .mpp is involved in the compilation
             ["build.c++.modules"]                 = {description = "Enable C++ modules for C++ building.", type = "boolean"},
+            -- Enable non cascading changes (experimental)
+            ["build.c++.modules.non_cascading_changes"] = {description = "Enable non cascading changes when supported (experimental).", default = false, type = "boolean"},
+            -- Hide C++ required files to reduce noise (may reduce build performance)
+            ["build.c++.modules.hide_dependencies"] = {description = "Hide dependencies from the commandline when build C++ modules.", default = false, type = "boolean"},
             -- Enable two phase compilation for C++ modules if supported by the compiler
             ["build.c++.modules.two_phases"]      = {description = "Enable two phase compilation if supported.", default = true, type = "boolean"},
             -- Enable std module
@@ -106,6 +110,9 @@ function policy.policies()
             ["build.c++.msvc.runtime"]            = {description = "Set the default vs runtime.", type = "string", values = {"MT", "MD"}},
             -- Enable cuda device link
             ["build.cuda.devlink"]                = {description = "Enable Cuda devlink.", type = "boolean"},
+            -- Enable linker output, e.g. show -Wl,--print-memory-usage output for gcc/g++
+            -- @see https://github.com/xmake-io/xmake/discussions/6772
+            ["build.linker.output"]               = {description = "Enable linker output.", type = "boolean"},
             -- Enable build jobgraph
             ["build.jobgraph"]                    = {description = "Enable build jobgraph.", default = true, type = "boolean"},
             -- Enable windows UAC and set level, e.g. invoker, admin, highest

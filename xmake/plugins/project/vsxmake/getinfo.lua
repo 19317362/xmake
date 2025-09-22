@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.semver")
 import("core.base.hashset")
+import("core.tool.toolchain")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
@@ -456,7 +457,9 @@ function main(outputdir, vsinfo)
 
             -- clear all options
             for _, opt in pairs(project.options()) do
-                opt:clear()
+                if not config.readonly(opt:fullname()) then
+                    opt:clear()
+                end
             end
 
             -- clear cache
@@ -481,6 +484,9 @@ function main(outputdir, vsinfo)
 
             -- update config files
             generate_configfiles()
+
+            -- save toolchain configs
+            toolchain.save()
 
             -- ensure to enter project directory
             os.cd(project.directory())

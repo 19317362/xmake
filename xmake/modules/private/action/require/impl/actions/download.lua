@@ -34,6 +34,17 @@ import("net.proxy")
 import("devel.git")
 import("utils.archive")
 
+-- get url extension
+function _url_extension(url)
+    local extension = archive.extension(url)
+    if extension == "" then
+        -- maybe non-archive file, e.g. .exe, .sh, ..
+        local urlpath = url:split('?', {plain = true})[1]
+        extension = path.extension(urlpath)
+    end
+    return extension
+end
+
 -- checkout codes from git
 function _checkout(package, url, sourcedir, opt)
     opt = opt or {}
@@ -153,7 +164,7 @@ function _download(package, url, sourcedir, opt)
     if not packagefile then
         packagefile = url_filename(url)
         if not os.isfile(packagefile) then -- we need to be compatible with the old file names
-            packagefile = package:name() .. "-" .. package:version_str() .. archive.extension(packagefile)
+            packagefile = package:name() .. "-" .. package:version_str() .. _url_extension(packagefile)
         end
     end
 
@@ -181,7 +192,7 @@ function _download(package, url, sourcedir, opt)
             os.cp(url, packagefile)
         else
             local localfile
-            local searchnames = {package:name() .. "-" .. package:version_str() .. archive.extension(url),
+            local searchnames = {package:name() .. "-" .. package:version_str() .. _url_extension(url),
                                  packagefile}
 
             -- match github name mangling https://github.com/xmake-io/xmake/issues/1343
@@ -217,6 +228,12 @@ function _download(package, url, sourcedir, opt)
 
     -- we do not extract it if we download only it.
     if opt.download_only then
+        tty.erase_line_to_start().cr()
+        if cached then
+            cprint("${yellow}  => ${clear}download %s .. ${color.success}cached", url)
+        else
+            cprint("${yellow}  => ${clear}download %s .. ${color.success}${text.success}", url)
+        end
         return
     end
 
@@ -261,6 +278,7 @@ function _download(package, url, sourcedir, opt)
         raise(errors or string.format("cannot extract %s, maybe missing extractor or invalid package file!", packagefile))
     else
         -- if it is not archive file, we only need to create empty source directory and use package:originfile()
+        -- e.g. .exe, .sh
         os.tryrm(sourcedir)
         os.mkdir(sourcedir)
     end
@@ -418,7 +436,7 @@ function main(package, opt)
                                     searchnames:insert(package:name() .. archive.extension(url_failed))
                                     searchnames:insert(path.basename(url_filename(url_failed)))
                                 else
-                                    local extension = archive.extension(url_failed)
+                                    local extension = _url_extension(url_failed)
                                     if extension then
                                         searchnames:insert(package:name() .. "-" .. package:version_str() .. extension)
                                     end
@@ -440,15 +458,6 @@ function main(package, opt)
         }
 
         if ok then
-            -- download only packages, we need not to install it, so we need flush console output
-            if opt.download_only then
-                tty.erase_line_to_start().cr()
-                if git.checkurl(url) then
-                    cprint("${yellow}  => ${clear}clone %s %s .. ${color.success}${text.success}", url, package:version_str())
-                else
-                    cprint("${yellow}  => ${clear}download %s .. ${color.success}${text.success}", url)
-                end
-            end
             break
         end
     end

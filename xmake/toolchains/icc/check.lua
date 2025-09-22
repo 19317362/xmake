@@ -75,12 +75,12 @@ function _check_vsenv(toolchain)
                 if pathenv then
                     paths = path.splitenv(pathenv)
                 end
-                local tool = find_tool("cl.exe", {version = true, force = true, paths = paths, envs = vcvars})
+                local tool = find_tool("cl.exe", {force = true, paths = paths, envs = vcvars})
                 if tool then
                     program = tool.program
                 end
                 if program then
-                    return vsver, tool
+                    return vsver
                 end
             end
         end
@@ -95,7 +95,6 @@ function _check_vstudio(toolchain)
             config.set("vs", vs, {force = true, readonly = true})
         end
         toolchain:config_set("vs", vs)
-        toolchain:configs_save()
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
     else
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.nothing}${text.nothing}", toolchain:arch())
@@ -118,11 +117,10 @@ function _check_intel_on_windows(toolchain)
         local iclvarsall = iccenv.iclvars
         local iclenv = iclvarsall[toolchain:arch()]
         if iclenv and iclenv.PATH and iclenv.INCLUDE and iclenv.LIB then
-            local tool = find_tool("icl.exe", {force = true, envs = iclenv, version = true})
+            local tool = find_tool("icl.exe", {force = true, envs = iclenv})
             if tool then
                 cprint("checking for Intel C/C++ Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
                 toolchain:config_set("varsall", iclvarsall)
-                toolchain:configs_save()
                 return _check_vstudio(toolchain)
             end
         end
@@ -143,7 +141,6 @@ function _check_intel_on_linux(toolchain)
             cprint("checking for Intel C/C++ Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
             toolchain:config_set("iccenv", iccenv)
             toolchain:config_set("bindir", iccenv.bindir)
-            toolchain:configs_save()
             return true
         end
         return true

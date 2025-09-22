@@ -22,7 +22,7 @@
 -- set any of  "boot_application" "console" "efi_application" "efi_boot_service_driver" "efi_rom" "efi_runtime_driver" "native" "posix" "windows"
 -- with target:set_values("windows.subsystem", <your value>) and the rule will pass the proper flag to the linker
 rule("platform.windows.subsystem")
-    on_config("mingw", "windows", function(target)
+    after_config("mingw", "windows", function(target)
         local subsystems = {
             "BOOT_APPLICATION", "CONSOLE", "EFI_APPLICATION", "EFI_BOOT_SERVICE_DRIVER", "EFI_ROM", "EFI_RUNTIME_DRIVER", "NATIVE", "POSIX", "WINDOWS"
         }
@@ -39,15 +39,15 @@ rule("platform.windows.subsystem")
             assert(valid, "Invalid subsystem " .. subsystem)
 
             if target:has_tool("ld", "clang", "clangxx", "clang_cl") then
-                target:add("ldflags", "-Wl,-subsystem:" .. subsystem, { force = true })
+                target:add("ldflags", "-Xlinker", "-subsystem:" .. subsystem, {force = true})
             elseif target:has_tool("ld", "link", "lld-link") then
-                target:add("ldflags", "/SUBSYSTEM:" .. subsystem:upper(), { force = true })
+                target:add("ldflags", "/SUBSYSTEM:" .. subsystem:upper(), {force = true})
             elseif target:has_tool("ld", "gcc", "gxx") then
-                target:add("ldflags", "-Wl,-m" .. subsystem, { force = true })
+                target:add("ldflags", "-m" .. subsystem, {force = true})
             elseif target:has_tool("ld", "lld") then
-                target:add("ldflags", "-subsystem:" .. subsystem, { force = true })
+                target:add("ldflags", "-subsystem:" .. subsystem, {force = true})
             elseif target:has_tool("ld", "ld") then
-                target:add("ldflags", "-m" .. subsystem, { force = true })
+                target:add("ldflags", "-m" .. subsystem, {force = true})
             end
         end
     end)
